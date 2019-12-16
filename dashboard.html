@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=800, initial-scale=1.0">
+    <title>Document</title>
+    <style type="text/css">
+        body {
+            margin: 0;
+        }
+
+        iframe {
+            display: block;
+            background: #000;
+            border: none;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+        }
+
+        div {
+            position: absolute;
+            top: 0;
+            right: 0;
+            padding: 5pt 5pt 0 0;
+            color: rgba(216, 13, 13, 0.726);
+        }
+    </style>
+</head>
+
+<body>
+    <iframe id="main" src="about:blank" scrolling="no" seamless="seamless"></iframe>
+    <div id="countdown"></div>
+</body>
+
+<script type="text/javascript">
+    var dashboards = [
+        { url: 'http://home:3000/playlists/play/1?kiosk&autofitpanels', time: '5m' },
+        { url: 'http://www.meteo.pl/um/metco/mgram_pict.php?ntype=0u&row=436&col=181&lang=pl', time: '20s', disable_at_night: true }
+    ];
+
+    const frame = document.getElementById('main');
+    let index = 0;
+    let nextChange = Date.now();
+
+    if (dashboards.length > 1) {
+        window.onload = function () {
+            changeDashboardLoop();
+
+            setInterval(countdownLoop, 1000);
+        }
+    }
+
+    function countdownLoop() {
+        const now = new Date();
+        const diffSeconds = (new Date(nextChange) - now) / 1000;
+        const el = document.getElementById('countdown');
+
+        if (diffSeconds <= 15) {
+            el.innerHTML = Math.round(diffSeconds) + 's';
+        } else {
+            el.innerHTML = '';
+        }
+    }
+
+    function changeDashboardLoop() {
+        while (dashboards[index].disable_at_night && isNight()) {
+            console.log('Ignoring at night, skipping to next one');
+
+            index = ++index % dashboards.length;
+        }
+
+        frame.src = dashboards[index].url;
+        const interval = parseTimespan(dashboards[index].time);
+
+        index = ++index % dashboards.length;
+
+        setTimeout(changeDashboardLoop, interval);
+        nextChange = Date.now() + interval;
+    }
+
+    function isNight() {
+        const hour = new Date().getHours();
+
+        return hour >= 22 || hour < 6;
+    }
+
+    function parseTimespan(text) {
+        const match = /^(?<value>\d+)(?<unit>[sm])$/.exec(text);
+
+        const value = parseInt(match.groups.value);
+        const mul = match.groups.unit === 'm' ? 60000 : 1000;
+
+        return value * mul;
+    }
+</script>
+
+</html>
