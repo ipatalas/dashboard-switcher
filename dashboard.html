@@ -71,11 +71,13 @@
             index = ++index % dashboards.length;
         }
 
-        frame.src = dashboards[index].url;
-        const interval = parseTimespan(dashboards[index].time);
+        if (frame.src != dashboards[index].url) {
+            frame.src = dashboards[index].url;
+        }
 
         index = ++index % dashboards.length;
 
+        const interval = parseTimespan(dashboards[index].time);
         setTimeout(changeDashboardLoop, interval);
         nextChange = Date.now() + interval;
     }
