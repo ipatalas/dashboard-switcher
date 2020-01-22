@@ -75,11 +75,11 @@
             frame.src = dashboards[index].url;
         }
 
-        index = ++index % dashboards.length;
-
         const interval = parseTimespan(dashboards[index].time);
         setTimeout(changeDashboardLoop, interval);
+
         nextChange = Date.now() + interval;
+        index = ++index % dashboards.length;
     }
 
     function isNight() {
