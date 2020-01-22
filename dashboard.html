@@ -19,12 +19,17 @@
             overflow: hidden;
         }
 
-        div {
+        #countdown {
             position: absolute;
             top: 0;
             right: 0;
-            padding: 5pt 5pt 0 0;
+            padding: 2pt 5pt 0 0;
             color: rgba(216, 13, 13, 0.726);
+        }
+
+        .before-change {
+            font-size: x-large;
+            font-weight: bold;
         }
     </style>
 </head>
@@ -57,10 +62,12 @@
         const diffSeconds = (new Date(nextChange) - now) / 1000;
         const el = document.getElementById('countdown');
 
+        el.innerHTML = Math.round(diffSeconds) + 's';
+
         if (diffSeconds <= 15) {
-            el.innerHTML = Math.round(diffSeconds) + 's';
+            el.classList.add('before-change');
         } else {
-            el.innerHTML = '';
+            el.classList.remove('before-change');
         }
     }
 
