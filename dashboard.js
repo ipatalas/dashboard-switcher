@@ -1,5 +1,5 @@
 // eslint-disable-next-line no-unused-vars
-function Schedule(schedule) {
+function Dashboard(schedule) {
     this.url = schedule.url;
     this.duration = parseTimespan(schedule.duration);
 
@@ -8,8 +8,8 @@ function Schedule(schedule) {
     this.activeFrom = parseHourAndMinutes(active_hours[0]);
     this.activeTo = parseHourAndMinutes(active_hours[1]);
 
-    this.isActive = function() {
-        const now = new Date();
+    this.isActive = function(now) {
+        now = now || new Date();
 
         const h = now.getHours();
         const m = now.getMinutes();

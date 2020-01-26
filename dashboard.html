@@ -39,7 +39,7 @@
     <div id="countdown"></div>
 </body>
 
-<script type="text/javascript" src="schedule.js"></script>
+<script type="text/javascript" src="dashboard.js"></script>
 <script type="text/javascript">
     var seed = [
         { url: 'http://home:8123/lovelace/commute_view?kiosk', duration: '2m', active_hours: '06:00-09:00' },
@@ -47,7 +47,7 @@
         { url: 'http://www.meteo.pl/um/metco/mgram_pict.php?ntype=0u&row=436&col=181&lang=pl', duration: '1m', active_hours: '06:00-21:30' }
     ];
 
-    const dashboards = seed.map(x => new Schedule(x));
+    const dashboards = seed.map(x => new Dashboard(x));
 
     const frame = document.getElementById('main');
     let index = 0;
