@@ -39,11 +39,15 @@
     <div id="countdown"></div>
 </body>
 
+<script type="text/javascript" src="schedule.js"></script>
 <script type="text/javascript">
-    var dashboards = [
-        { url: 'http://home:8123/lovelace/dashboard_view?kiosk', time: '5m' },
-        { url: 'http://www.meteo.pl/um/metco/mgram_pict.php?ntype=0u&row=436&col=181&lang=pl', time: '20s', disable_at_night: true }
+    var seed = [
+        { url: 'http://home:8123/lovelace/commute_view?kiosk', duration: '2m', active_hours: '06:00-09:00' },
+        { url: 'http://home:8123/lovelace/dashboard_view?kiosk', duration: '5m' },
+        { url: 'http://www.meteo.pl/um/metco/mgram_pict.php?ntype=0u&row=436&col=181&lang=pl', duration: '1m', active_hours: '06:00-21:30' }
     ];
+
+    const dashboards = seed.map(x => new Schedule(x));
 
     const frame = document.getElementById('main');
     let index = 0;
@@ -72,8 +76,8 @@
     }
 
     function changeDashboardLoop() {
-        while (dashboards[index].disable_at_night && isNight()) {
-            console.log('Ignoring at night, skipping to next one');
+        while (!dashboards[index].isActive()) {
+            console.log('Ignoring inactive dashboard, skipping to next one');
 
             index = ++index % dashboards.length;
         }
@@ -82,26 +86,11 @@
             frame.src = dashboards[index].url;
         }
 
-        const interval = parseTimespan(dashboards[index].time);
+        const interval = dashboards[index].duration;
         setTimeout(changeDashboardLoop, interval);
 
         nextChange = Date.now() + interval;
         index = ++index % dashboards.length;
-    }
-
-    function isNight() {
-        const hour = new Date().getHours();
-
-        return hour >= 22 || hour < 6;
-    }
-
-    function parseTimespan(text) {
-        const match = /^(?<value>\d+)(?<unit>[sm])$/.exec(text);
-
-        const value = parseInt(match.groups.value);
-        const mul = match.groups.unit === 'm' ? 60000 : 1000;
-
-        return value * mul;
     }
 </script>
 
