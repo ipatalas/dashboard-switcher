@@ -17,12 +17,19 @@
             height: 100vh;
             width: 100vw;
             overflow: hidden;
+            position: absolute;
+            z-index: 1;
+        }
+
+        .top {
+            z-index: 2;
         }
 
         #countdown {
             position: absolute;
             top: 0;
             right: 0;
+            z-index: 10;
             padding: 2pt 5pt 0 0;
             color: rgba(216, 13, 13, 0.726);
         }
@@ -36,6 +43,7 @@
 
 <body>
     <iframe id="main" src="about:blank" scrolling="no" seamless="seamless"></iframe>
+    <iframe id="main2" src="about:blank" scrolling="no" seamless="seamless" class="top"></iframe>
     <div id="countdown"></div>
 </body>
 
@@ -46,12 +54,25 @@
         { url: 'http://home:8123/lovelace/dashboard_view?kiosk', duration: '5m' },
         { url: 'http://www.meteo.pl/um/metco/mgram_pict.php?ntype=0u&row=436&col=181&lang=pl', duration: '1m', active_hours: '06:00-21:30' }
     ];
+    const preloadTime = 5000;
 
     const dashboards = seed.map(x => new Dashboard(x));
 
-    const frame = document.getElementById('main');
+    const frames = [
+        document.getElementById('main'),
+        document.getElementById('main2'),
+    ];
+
     let index = 0;
-    let nextChange = Date.now();
+    let activeFrame = 0;
+    let nextChange = new Date();
+
+    skipInactiveDashboards();
+    const frame = frames[activeFrame];
+
+    if (frame.src != dashboards[index].url) {
+        frame.src = dashboards[index].url;
+    }
 
     if (dashboards.length > 1) {
         window.onload = function () {
@@ -63,7 +84,7 @@
 
     function countdownLoop() {
         const now = new Date();
-        const diffSeconds = (new Date(nextChange) - now) / 1000;
+        const diffSeconds = (nextChange - now) / 1000;
         const el = document.getElementById('countdown');
 
         el.innerHTML = Math.round(diffSeconds) + 's';
@@ -76,21 +97,41 @@
     }
 
     function changeDashboardLoop() {
-        while (!dashboards[index].isActive()) {
-            console.log('Ignoring inactive dashboard, skipping to next one');
-
-            index = ++index % dashboards.length;
-        }
-
-        if (frame.src != dashboards[index].url) {
-            frame.src = dashboards[index].url;
-        }
+        swapFrames();
 
         const interval = dashboards[index].duration;
-        setTimeout(changeDashboardLoop, interval);
+        nextChange = new Date(Date.now() + interval);
 
-        nextChange = Date.now() + interval;
+        // set next dashboard
+            index = ++index % dashboards.length;
+        skipInactiveDashboards(nextChange);
+
+        setTimeout(changeDashboardLoop, interval);
+        setTimeout(preloadFrame, interval - preloadTime);
+    }
+
+    function swapFrames() {
+        console.log('Swapping frames');
+        frames.forEach(frame => {
+            frame.classList.toggle('top');
+        });
+        }
+
+    function preloadFrame() {
+        console.log('Preloading next dashboard');
+
+        activeFrame = ++activeFrame % 2;
+
+        const preloadFrame = frames[activeFrame];
+        preloadFrame.src = dashboards[index].url;
+        }
+
+    function skipInactiveDashboards(now) {
+        while (!dashboards[index].isActive(now)) {
+            console.log('Ignoring inactive dashboard, skipping to next one');
+
         index = ++index % dashboards.length;
+    }
     }
 </script>
 
