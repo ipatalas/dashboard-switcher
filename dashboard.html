@@ -54,6 +54,9 @@
     const countdown = new CountdownTimer();
 
     var dashboards = [
+        { url: 'http://home:8123/lovelace/commute_view?kiosk', duration: '2m', active_hours: '06:00-09:00' },
+        { url: 'http://home:8123/lovelace/dashboard_view?kiosk', duration: '5m' },
+        { url: 'http://www.meteo.pl/um/metco/mgram_pict.php?ntype=0u&row=436&col=181&lang=pl', duration: '1m', active_hours: '06:00-21:30' }
     ];
 
     const scheduler = new Scheduler(dashboards, countdown);
