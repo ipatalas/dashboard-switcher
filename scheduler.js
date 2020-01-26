@@ -7,6 +7,8 @@ function Scheduler(dashboards, countdownTimer) {
 
     this.frames = document.querySelectorAll('iframe');
 
+    console.table(this.dashboards);
+
     this.skipInactiveDashboards();
 
     const frame = this.frames[this.activeFrame];
@@ -25,6 +27,7 @@ Scheduler.prototype.mainLoop = function () {
     // set next dashboard
     this.index = ++this.index % this.dashboards.length;
     this.skipInactiveDashboards(this.countdownTimer.nextChange);
+    console.log(`Set next dashboard to: ${this.dashboards[this.index].url}`);
 
     setTimeout(this.mainLoop.bind(this), interval);
     setTimeout(this.preloadFrame.bind(this), interval - this.preloadTime);
@@ -32,13 +35,12 @@ Scheduler.prototype.mainLoop = function () {
 
 Scheduler.prototype.swapFrames = function() {
     console.log('Swapping frames');
-    this.frames.forEach(frame => {
-        frame.classList.toggle('visible');
-    });
+
+    this.frames.forEach(x => x.classList.toggle('visible'));
 }
 
 Scheduler.prototype.preloadFrame = function() {
-    console.log('Preloading next dashboard');
+    console.log(`Preloading next dashboard: ${this.dashboards[this.index].url}`);
 
     this.activeFrame = ++this.activeFrame % 2;
 
@@ -48,7 +50,7 @@ Scheduler.prototype.preloadFrame = function() {
 
 Scheduler.prototype.skipInactiveDashboards = function(now) {
     while (!this.dashboards[this.index].isActive(now)) {
-        console.log('Ignoring inactive dashboard, skipping to next one');
+        console.log(`Skipping ${this.dashboards[this.index].url} (inactive at ${now})`);
 
         this.index = ++this.index % this.dashboards.length;
     }
