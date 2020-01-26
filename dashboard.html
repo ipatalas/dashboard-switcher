@@ -48,7 +48,10 @@
 </body>
 
 <script type="text/javascript" src="dashboard.js"></script>
+<script type="text/javascript" src="countdown-timer.js"></script>
 <script type="text/javascript">
+    const countdown = new CountdownTimer();
+
     var seed = [
         { url: 'http://home:8123/lovelace/commute_view?kiosk', duration: '2m', active_hours: '06:00-09:00' },
         { url: 'http://home:8123/lovelace/dashboard_view?kiosk', duration: '5m' },
@@ -65,7 +68,6 @@
 
     let index = 0;
     let activeFrame = 0;
-    let nextChange = new Date();
 
     skipInactiveDashboards();
     const frame = frames[activeFrame];
@@ -78,21 +80,7 @@
         window.onload = function () {
             changeDashboardLoop();
 
-            setInterval(countdownLoop, 1000);
-        }
-    }
-
-    function countdownLoop() {
-        const now = new Date();
-        const diffSeconds = (nextChange - now) / 1000;
-        const el = document.getElementById('countdown');
-
-        el.innerHTML = Math.round(diffSeconds) + 's';
-
-        if (diffSeconds <= 15) {
-            el.classList.add('before-change');
-        } else {
-            el.classList.remove('before-change');
+            countdown.start();
         }
     }
 
@@ -100,11 +88,11 @@
         swapFrames();
 
         const interval = dashboards[index].duration;
-        nextChange = new Date(Date.now() + interval);
+        countdown.nextChange = new Date(Date.now() + interval);
 
         // set next dashboard
             index = ++index % dashboards.length;
-        skipInactiveDashboards(nextChange);
+        skipInactiveDashboards(countdown.nextChange);
 
         setTimeout(changeDashboardLoop, interval);
         setTimeout(preloadFrame, interval - preloadTime);
