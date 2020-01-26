@@ -5,10 +5,7 @@ function Scheduler(dashboards, countdownTimer) {
     this.activeFrame = 0;
     this.preloadTime = 5000;
 
-    this.frames = [
-        document.getElementById('main'),
-        document.getElementById('main2'),
-    ];
+    this.frames = document.querySelectorAll('iframe');
 
     this.skipInactiveDashboards();
 
