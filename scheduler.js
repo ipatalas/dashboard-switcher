@@ -36,7 +36,7 @@ Scheduler.prototype.mainLoop = function () {
 Scheduler.prototype.swapFrames = function() {
     console.log('Swapping frames');
     this.frames.forEach(frame => {
-        frame.classList.toggle('top');
+        frame.classList.toggle('visible');
     });
 }
 
