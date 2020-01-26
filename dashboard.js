@@ -1,4 +1,3 @@
-// eslint-disable-next-line no-unused-vars
 function Dashboard(schedule) {
     this.url = schedule.url;
     this.duration = parseTimespan(schedule.duration);
