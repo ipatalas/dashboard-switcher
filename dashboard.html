@@ -49,78 +49,20 @@
 
 <script type="text/javascript" src="dashboard.js"></script>
 <script type="text/javascript" src="countdown-timer.js"></script>
+<script type="text/javascript" src="scheduler.js"></script>
 <script type="text/javascript">
     const countdown = new CountdownTimer();
 
-    var seed = [
-        { url: 'http://home:8123/lovelace/commute_view?kiosk', duration: '2m', active_hours: '06:00-09:00' },
-        { url: 'http://home:8123/lovelace/dashboard_view?kiosk', duration: '5m' },
-        { url: 'http://www.meteo.pl/um/metco/mgram_pict.php?ntype=0u&row=436&col=181&lang=pl', duration: '1m', active_hours: '06:00-21:30' }
-    ];
-    const preloadTime = 5000;
-
-    const dashboards = seed.map(x => new Dashboard(x));
-
-    const frames = [
-        document.getElementById('main'),
-        document.getElementById('main2'),
+    var dashboards = [
     ];
 
-    let index = 0;
-    let activeFrame = 0;
-
-    skipInactiveDashboards();
-    const frame = frames[activeFrame];
-
-    if (frame.src != dashboards[index].url) {
-        frame.src = dashboards[index].url;
-    }
+    const scheduler = new Scheduler(dashboards, countdown);
 
     if (dashboards.length > 1) {
         window.onload = function () {
-            changeDashboardLoop();
-
+            scheduler.start();
             countdown.start();
         }
     }
-
-    function changeDashboardLoop() {
-        swapFrames();
-
-        const interval = dashboards[index].duration;
-        countdown.nextChange = new Date(Date.now() + interval);
-
-        // set next dashboard
-            index = ++index % dashboards.length;
-        skipInactiveDashboards(countdown.nextChange);
-
-        setTimeout(changeDashboardLoop, interval);
-        setTimeout(preloadFrame, interval - preloadTime);
-    }
-
-    function swapFrames() {
-        console.log('Swapping frames');
-        frames.forEach(frame => {
-            frame.classList.toggle('top');
-        });
-        }
-
-    function preloadFrame() {
-        console.log('Preloading next dashboard');
-
-        activeFrame = ++activeFrame % 2;
-
-        const preloadFrame = frames[activeFrame];
-        preloadFrame.src = dashboards[index].url;
-        }
-
-    function skipInactiveDashboards(now) {
-        while (!dashboards[index].isActive(now)) {
-            console.log('Ignoring inactive dashboard, skipping to next one');
-
-        index = ++index % dashboards.length;
-    }
-    }
 </script>
-
 </html>
