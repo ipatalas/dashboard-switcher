@@ -51,6 +51,8 @@
 <script type="text/javascript" src="dashboard.js"></script>
 <script type="text/javascript" src="countdown-timer.js"></script>
 <script type="text/javascript" src="scheduler.js"></script>
+<script src="https://unpkg.com/mqtt@3.0.0/dist/mqtt.min.js" integrity="sha384-RncfPt5e6SfDdczX+vMN52wTiU9aYeGJI/RDVAyV/vKe/EoUQ/BuyHxzZkeZcPyK" crossorigin="anonymous"></script>
+<script type="text/javascript" src="button.js"></script>
 <script type="text/javascript">
     const countdown = new CountdownTimer();
 
@@ -67,6 +69,7 @@
         window.onload = function () {
             scheduler.start();
             countdown.start();
+            new ButtonHandler(scheduler);
         }
     }
 </script>
