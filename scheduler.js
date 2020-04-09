@@ -3,10 +3,8 @@ function Scheduler(dashboards, countdownTimer) {
     this.countdownTimer = countdownTimer;
     this.index = 0;
     this.activeFrame = 0;
-    this.preloadTime = 5000;
 
     this.mainTimeout = null;
-    this.preloadTimeout = null;
 
     this.frames = document.querySelectorAll('iframe');
 
@@ -33,7 +31,7 @@ Scheduler.prototype.mainLoop = function () {
     console.log(`Set next dashboard to: ${this.dashboards[this.index].url}`);
 
     this.mainTimeout = setTimeout(this.mainLoop.bind(this), interval);
-    this.preloadTimeout = setTimeout(this.preloadFrame.bind(this), interval - this.preloadTime);
+    this.preloadFrame();
 }
 
 Scheduler.prototype.swapFrames = function() {
@@ -43,7 +41,6 @@ Scheduler.prototype.swapFrames = function() {
 }
 
 Scheduler.prototype.preloadFrame = function() {
-    this.preloadTimeout = null;
     console.log(`Preloading next dashboard: ${this.dashboards[this.index].url}`);
 
     this.activeFrame = ++this.activeFrame % 2;
@@ -65,11 +62,6 @@ Scheduler.prototype.start = function() {
 }
 
 Scheduler.prototype.next = function() {
-    if (this.preloadTimeout) {
-        clearTimeout(this.preloadTimeout);
-        this.preloadFrame();
-    }
-
     this.mainTimeout && clearTimeout(this.mainTimeout);
-    setTimeout(this.mainLoop.bind(this), 200);
+    this.mainLoop();
 }
