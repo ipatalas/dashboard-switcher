@@ -7,14 +7,23 @@ function Dashboard(schedule) {
     this.activeFrom = parseHourAndMinutes(active_hours[0]);
     this.activeTo = parseHourAndMinutes(active_hours[1]);
 
+    this.isOvernight = this.activeFrom.h > this.activeTo.h;
+
     this.isActive = function(now) {
         now = now || new Date();
 
         const h = now.getHours();
         const m = now.getMinutes();
 
-        return (h > this.activeFrom.h || h == this.activeFrom.h && m >= this.activeFrom.m)
-            && (h < this.activeTo.h || h == this.activeTo.h && m <= this.activeTo.m);
+        const isAfterFrom = h > this.activeFrom.h || h == this.activeFrom.h && m >= this.activeFrom.m;
+        const isBeforeTo = h < this.activeTo.h || h == this.activeTo.h && m <= this.activeTo.m;
+
+        if (this.isOvernight) {
+            return isAfterFrom || isBeforeTo;
+        } else {
+            return isAfterFrom && isBeforeTo;
+        }
+
     };
 
     function parseHourAndMinutes(time) {

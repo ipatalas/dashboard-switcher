@@ -10,7 +10,7 @@ function Scheduler(dashboards, countdownTimer) {
 
     console.table(this.dashboards);
 
-    this.skipInactiveDashboards();
+    this.skipInactiveDashboards(new Date());
 
     const frame = this.frames[this.activeFrame];
 
