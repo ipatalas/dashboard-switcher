@@ -39,6 +39,19 @@
             font-size: x-large;
             font-weight: bold;
         }
+
+        #error {
+            z-index: 3;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            color: red;
+            font-size: xxx-large;
+            justify-content: center;
+            text-align: center;
+        }
     </style>
 </head>
 
@@ -46,32 +59,44 @@
     <iframe src="about:blank" scrolling="no" seamless="seamless"></iframe>
     <iframe src="about:blank" scrolling="no" seamless="seamless" class="visible"></iframe>
     <div id="countdown"></div>
+    <div id="error"></div>
 </body>
 
 <script type="text/javascript" src="dashboard.js"></script>
 <script type="text/javascript" src="countdown-timer.js"></script>
 <script type="text/javascript" src="scheduler.js"></script>
-<script src="https://unpkg.com/mqtt@3.0.0/dist/mqtt.min.js" integrity="sha384-RncfPt5e6SfDdczX+vMN52wTiU9aYeGJI/RDVAyV/vKe/EoUQ/BuyHxzZkeZcPyK" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/mqtt@3.0.0/dist/mqtt.min.js"
+    integrity="sha384-RncfPt5e6SfDdczX+vMN52wTiU9aYeGJI/RDVAyV/vKe/EoUQ/BuyHxzZkeZcPyK"
+    crossorigin="anonymous"></script>
 <script type="text/javascript" src="button.js"></script>
 <script type="text/javascript">
-    const countdown = new CountdownTimer();
+    (async () => {
+        const logError = msg => document.getElementById('error').innerText = msg;
 
-    var dashboards = [
-        { url: 'http://home:8123/lovelace/commute_view?kiosk', duration: '2m', active_hours: '06:00-09:00' },
-        { url: 'http://home:8123/lovelace/dashboard_view?kiosk', duration: '5m', active_hours: '05:00-23:00' },
-        { url: 'http://home:8123/lovelace/clock_view?kiosk', duration: '2m', active_hours: '22:00-06:00' },
-        { url: 'http://home:3002/corona.html', duration: '2m', active_hours: '06:00-21:30' },
-        { url: 'http://www.meteo.pl/um/metco/mgram_pict.php?ntype=0u&row=436&col=181&lang=pl', duration: '1m', active_hours: '06:00-21:30' }
-    ];
+        try {
+            const response = await fetch("http://home:3002/config.json");
 
-    const scheduler = new Scheduler(dashboards, countdown);
+            if (response.status !== 200) {
+                logError("Bad response - " + response.status);
+                console.error(await response.text());
+            } else {
+                const config = await response.json();
 
-    if (dashboards.length > 1) {
-        window.onload = function () {
-            scheduler.start();
-            countdown.start();
-            new ButtonHandler(scheduler);
+                const countdown = new CountdownTimer();
+                const scheduler = new Scheduler(config.dashboards, countdown);
+
+                if (config.dashboards.length > 1) {
+                    window.onload = function () {
+                        scheduler.start();
+                        countdown.start();
+                        new ButtonHandler(scheduler);
+                    }
+                }
+            }
+        } catch (ex) {
+            logError("Error while fetching configuration\n\n" + ex);
         }
-    }
+    })();
 </script>
+
 </html>
