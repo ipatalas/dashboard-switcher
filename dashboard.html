@@ -28,7 +28,8 @@
         const logError = msg => document.getElementById('error').innerText = msg;
 
         try {
-            const response = await fetch("http://home:3002/config.json");
+            const configUrl = location.hash.substring(1);
+            const response = await fetch(configUrl);
 
             if (response.status !== 200) {
                 logError("Bad response - " + response.status);
