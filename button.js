@@ -1,10 +1,10 @@
-function ButtonHandler(scheduler) {
-    const client = mqtt.connect('ws://home:9001');
+function ButtonHandler(scheduler, config) {
+    const client = mqtt.connect(config.server);
 
     client.on('connect', function() {
         console.log('Connected to MQTT');
 
-        client.subscribe('raw/zigbee2mqtt/button', function(err) {
+        client.subscribe(config.topic, function(err) {
             if (err) {
                 console.log(err);
             }

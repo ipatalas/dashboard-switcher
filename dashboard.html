@@ -43,7 +43,7 @@
                     window.onload = function () {
                         scheduler.start();
                         countdown.start();
-                        new ButtonHandler(scheduler);
+                        ButtonHandler(scheduler, config.mqtt_button);
                     }
                 }
             }
