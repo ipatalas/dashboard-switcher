@@ -1,0 +1,23 @@
+{
+    "mqtt_button": {
+        "server": "ws://mqtt_server:9001",
+        "topic": "zigbee2mqtt/button"
+    },
+    "dashboards": [
+        {
+            "url": "http://home:8123/lovelace/commute_view?kiosk",
+            "duration": "2m",
+            "active_hours": "06:00-09:00"
+        },
+        {
+            "url": "http://home:8123/lovelace/dashboard_view?kiosk",
+            "duration": "5m",
+            "active_hours": "05:00-23:00"
+        },
+        {
+            "url": "http://home:8123/lovelace/clock_view?kiosk",
+            "duration": "2m",
+            "active_hours": "22:00-06:00"
+        }
+    ]
+}
