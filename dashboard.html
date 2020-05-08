@@ -25,14 +25,27 @@
 <script type="text/javascript" src="button.js"></script>
 <script type="text/javascript">
     (async () => {
-        const logError = msg => document.getElementById('error').innerText = msg;
+        const urlParams = new URLSearchParams(location.search);
+
+        const logError = msg => {
+            const x = document.getElementById('error');
+            x.innerText = x.innerText.length > 0 ? x.innerText + "\n" + msg : msg;
+        }
+
+        if (urlParams.has('debug')) {
+            console.log = logError;
+            console.error = logError;
+        }
 
         try {
-            const configUrl = location.hash.substring(1);
+            const configUrl = urlParams.get('config');
             const response = await fetch(configUrl);
+
+            console.log("Config URL: " + configUrl);
 
             if (response.status !== 200) {
                 logError("Bad response - " + response.status);
+                logError("Params: " + location.search);
                 console.error(await response.text());
             } else {
                 const config = await response.json();
@@ -41,11 +54,9 @@
                 const scheduler = new Scheduler(config.dashboards, countdown);
 
                 if (config.dashboards.length > 1) {
-                    window.onload = function () {
-                        scheduler.start();
-                        countdown.start();
-                        ButtonHandler(scheduler, config.mqtt_button);
-                    }
+                    scheduler.start();
+                    countdown.start();
+                    ButtonHandler(scheduler, config.mqtt_button);
                 }
             }
         } catch (ex) {
