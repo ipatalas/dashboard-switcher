@@ -32,13 +32,13 @@ Scheduler.prototype.mainLoop = function () {
 
     this.mainTimeout = setTimeout(this.mainLoop.bind(this), interval);
     this.preloadFrame();
-}
+};
 
 Scheduler.prototype.swapFrames = function() {
     console.log('Swapping frames');
 
     this.frames.forEach(x => x.classList.toggle('visible'));
-}
+};
 
 Scheduler.prototype.preloadFrame = function() {
     console.log(`Preloading next dashboard: ${this.dashboards[this.index].url}`);
@@ -47,7 +47,7 @@ Scheduler.prototype.preloadFrame = function() {
 
     const preloadFrame = this.frames[this.activeFrame];
     preloadFrame.src = this.dashboards[this.index].url;
-}
+};
 
 Scheduler.prototype.skipInactiveDashboards = function(now) {
     while (!this.dashboards[this.index].isActive(now)) {
@@ -55,13 +55,13 @@ Scheduler.prototype.skipInactiveDashboards = function(now) {
 
         this.index = ++this.index % this.dashboards.length;
     }
-}
+};
 
 Scheduler.prototype.start = function() {
     this.mainLoop();
-}
+};
 
 Scheduler.prototype.next = function() {
     this.mainTimeout && clearTimeout(this.mainTimeout);
     this.mainLoop();
-}
+};
