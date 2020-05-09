@@ -39,7 +39,7 @@
 
         try {
             const configUrl = urlParams.get('config');
-            const response = await fetch(configUrl);
+            const response = await fetch(configUrl, { cache: "no-store" });
 
             console.log("Config URL: " + configUrl);
 
