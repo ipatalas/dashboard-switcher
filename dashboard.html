@@ -56,7 +56,10 @@
                 if (config.dashboards.length > 1) {
                     scheduler.start();
                     countdown.start();
-                    ButtonHandler(scheduler, config.mqtt_button);
+
+                    if (config.mqtt_button) {
+                        ButtonHandler(scheduler, config.mqtt_button);
+                    }
                 }
             }
         } catch (ex) {
