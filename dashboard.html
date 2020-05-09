@@ -16,56 +16,9 @@
     <div id="error"></div>
 </body>
 
-<script type="text/javascript" src="dashboard.js"></script>
-<script type="text/javascript" src="countdown-timer.js"></script>
-<script type="text/javascript" src="scheduler.js"></script>
 <script src="https://unpkg.com/mqtt@3.0.0/dist/mqtt.min.js"
     integrity="sha384-RncfPt5e6SfDdczX+vMN52wTiU9aYeGJI/RDVAyV/vKe/EoUQ/BuyHxzZkeZcPyK"
     crossorigin="anonymous"></script>
-<script type="text/javascript" src="button.js"></script>
-<script type="text/javascript">
-    (async () => {
-        const urlParams = new URLSearchParams(location.search);
-
-        const logError = msg => {
-            const x = document.getElementById('error');
-            x.innerText = x.innerText.length > 0 ? x.innerText + "\n" + msg : msg;
-        }
-
-        if (urlParams.has('debug')) {
-            console.log = logError;
-            console.error = logError;
-        }
-
-        try {
-            const configUrl = urlParams.get('config');
-            const response = await fetch(configUrl, { cache: "no-store" });
-
-            console.log("Config URL: " + configUrl);
-
-            if (response.status !== 200) {
-                logError("Bad response - " + response.status);
-                logError("Params: " + location.search);
-                console.error(await response.text());
-            } else {
-                const config = await response.json();
-
-                const countdown = new CountdownTimer();
-                const scheduler = new Scheduler(config.dashboards, countdown);
-
-                if (config.dashboards.length > 1) {
-                    scheduler.start();
-                    countdown.start();
-
-                    if (config.mqtt_button) {
-                        ButtonHandler(scheduler, config.mqtt_button);
-                    }
-                }
-            }
-        } catch (ex) {
-            logError("Error while fetching configuration\n\n" + ex);
-        }
-    })();
-</script>
+<script type="module" src="main.js"></script>
 
 </html>

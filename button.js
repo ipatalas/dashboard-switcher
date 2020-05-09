@@ -1,4 +1,5 @@
-function ButtonHandler(scheduler, config) {
+/*global mqtt */
+export function InstallButtonHandler(scheduler, config) {
     const client = mqtt.connect(config.server);
 
     client.on('connect', function() {
