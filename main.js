@@ -7,6 +7,7 @@ import { InstallButtonHandler } from './button.js';
 
     const logError = msg => {
         const x = document.getElementById('error');
+        x.style.display = 'block';
         x.innerText = x.innerText.length > 0 ? x.innerText + '\n' + msg : msg;
     };
 
