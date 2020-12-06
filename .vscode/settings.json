@@ -1,3 +1,11 @@
 {
-    "eslint.enable": true
+    "eslint.enable": true,
+    "json.schemas": [
+        {
+            "fileMatch": [
+                "/config.json"
+            ],
+            "url": "./config.schema.json"
+        }
+    ]
 }
