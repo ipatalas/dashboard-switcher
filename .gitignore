@@ -1,2 +1,4 @@
 /config*.json
+/public/config*.json
 /corona.html
+/node_modules

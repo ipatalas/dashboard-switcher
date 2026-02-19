@@ -1,6 +1,13 @@
 import { CountdownTimer } from './countdown-timer.js';
 import { Scheduler } from './scheduler.js';
 import { InstallButtonHandler } from './button.js';
+import { OtelLogger } from "./logger.js";
+
+const attributes = {
+    'origin': document.URL,
+    'userAgent': navigator.userAgent,
+};
+const logger = new OtelLogger('dashboard-switcher', 'http://otel.debian.local:4318/v1/logs', attributes);
 
 (async () => {
     const urlParams = new URLSearchParams(location.search);
@@ -18,11 +25,18 @@ import { InstallButtonHandler } from './button.js';
 
     try {
         const configUrl = urlParams.get('config');
+        if (!configUrl) {
+            logger.error('No configuration URL provided');
+            logError('No configuration URL provided');
+            return;
+        }
+
         const response = await fetch(configUrl, { cache: 'no-store' });
 
         console.log('Config URL: ' + configUrl);
 
         if (response.status !== 200) {
+            logger.error({ status: response.status, params: location.search }, 'Bad response');
             logError('Bad response - ' + response.status);
             logError('Params: ' + location.search);
             console.error(await response.text());
@@ -42,6 +56,7 @@ import { InstallButtonHandler } from './button.js';
             }
         }
     } catch (ex) {
+        logger.error(ex, 'Error while fetching configuration');
         logError('Error while fetching configuration\n\n' + ex);
     }
 })();
