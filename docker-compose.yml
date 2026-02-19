@@ -1,0 +1,19 @@
+version: "3.6"
+
+services:
+
+  http:
+    image: nginx:1.27.1-alpine
+    container_name: nginx
+    restart: always
+    #    networks:
+    #      - local
+    ports:
+      - 3002:80
+    volumes:
+      - ${PWD}/public:/usr/share/nginx/html:ro
+
+#networks:
+#  local:
+#    name: iot-monitoring
+#    external: true
