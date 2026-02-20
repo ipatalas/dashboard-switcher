@@ -2,18 +2,17 @@ version: "3.6"
 
 services:
 
-  http:
+  dashboard-switcher:
     image: nginx:1.27.1-alpine
-    container_name: nginx
+    container_name: dashboard-switcher
     restart: always
-    #    networks:
-    #      - local
     ports:
-      - 3002:80
+      - "127.0.0.1:3002:80"
     volumes:
       - ${PWD}/public:/usr/share/nginx/html:ro
+    networks:
+      - shared-rev-proxy
 
-#networks:
-#  local:
-#    name: iot-monitoring
-#    external: true
+networks:
+  shared-rev-proxy:
+    external: true
