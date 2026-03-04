@@ -57,6 +57,6 @@ const logger = new OtelLogger('dashboard-switcher', 'http://otel.debian.local:43
         }
     } catch (ex) {
         logger.error(ex, 'Error while fetching configuration');
-        logError('Error while fetching configuration\n\n' + ex);
+        logError(`Error while fetching configuration\n\n${ex.message}\n\n${ex.stack}`);
     }
 })();

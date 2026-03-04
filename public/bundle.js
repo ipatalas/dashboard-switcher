@@ -284,7 +284,7 @@ const logger = new _logger.OtelLogger('dashboard-switcher', 'http://otel.debian.
     }
   } catch (ex) {
     logger.error(ex, 'Error while fetching configuration');
-    logError('Error while fetching configuration\n\n' + ex);
+    logError(`Error while fetching configuration\n\n${ex.message}\n\n${ex.stack}`);
   }
 })();
 
@@ -303,60 +303,128 @@ class Scheduler {
   /**
    * @param {Object[]} dashboards
    * @param {string} dashboards.url
-   * @param {string} dashboards.duration
+   * @param {string|number} dashboards.duration
    * @param {string} dashboards.active_hours
    * @param {CountdownTimer} countdownTimer
    */
   constructor(dashboards, countdownTimer) {
     this.dashboards = dashboards.map(x => new _dashboard.Dashboard(x));
     this.countdownTimer = countdownTimer;
-    this.index = 0;
-    this.activeFrame = 0;
-    this.mainTimeout = null;
-    this.frames = document.querySelectorAll('iframe');
+    this.frames = Array.from(document.querySelectorAll('iframe'));
+    this.timerId = null;
+    this.visibleFrame = this.detectVisibleFrameIndex();
+    this.visibleDashboardIndex = null;
+    this.preloadedDashboardIndex = null;
     console.table(this.dashboards);
-    this.skipInactiveDashboards(new Date());
-    const frame = this.frames[this.activeFrame];
-    if (frame.src != this.dashboards[this.index].url) {
-      frame.src = this.dashboards[this.index].url;
-    }
-  }
-  mainLoop() {
-    this.swapFrames();
-    const interval = this.dashboards[this.index].duration;
-    this.countdownTimer.nextChange = new Date(Date.now() + interval);
-    this.index = ++this.index % this.dashboards.length;
-    this.skipInactiveDashboards(this.countdownTimer.nextChange);
-    console.log(`Set next dashboard to: ${this.dashboards[this.index].url}`);
-    this.mainTimeout = setTimeout(this.mainLoop.bind(this), interval);
-    this.preloadFrame();
-  }
-  swapFrames() {
-    console.log('Swapping frames');
-    this.frames.forEach(x => x.classList.toggle('visible'));
-  }
-  preloadFrame() {
-    console.log(`Preloading next dashboard: ${this.dashboards[this.index].url}`);
-    this.activeFrame = ++this.activeFrame % 2;
-    const preloadFrame = this.frames[this.activeFrame];
-    preloadFrame.src = this.dashboards[this.index].url;
-  }
-
-  /**
-   * @param {Date} now
-   */
-  skipInactiveDashboards(now) {
-    while (!this.dashboards[this.index].isActive(now)) {
-      console.log(`Skipping ${this.dashboards[this.index].url} (inactive at ${now})`);
-      this.index = ++this.index % this.dashboards.length;
-    }
   }
   start() {
-    this.mainLoop();
+    this.clearTimer();
+    if (this.dashboards.length === 0 || this.frames.length < 2) {
+      console.warn('Scheduler cannot start: missing dashboards or iframes');
+      return;
+    }
+    const now = new Date();
+    const currentIndex = this.dashboards.findIndex(d => d.isActive(now));
+    if (currentIndex === -1) {
+      console.warn('No active dashboards at start');
+      this.scheduleRetry();
+      return;
+    }
+    const url = this.dashboards[currentIndex].url;
+    this.frames[this.visibleFrame].src = url;
+    this.visibleDashboardIndex = currentIndex;
+    this.planNextCycle(now);
   }
   next() {
-    this.mainTimeout && clearTimeout(this.mainTimeout);
-    this.mainLoop();
+    this.clearTimer();
+    if (this.visibleDashboardIndex === null) {
+      this.start();
+      return;
+    }
+    this.onTick();
+  }
+  onTick() {
+    if (this.visibleDashboardIndex === null) {
+      this.start();
+      return;
+    }
+    const now = new Date();
+    const currentIndex = this.visibleDashboardIndex;
+    const candidateIndex = this.pickNextDifferentIndex(currentIndex, now);
+    if (candidateIndex !== null) {
+      this.ensurePreloaded(candidateIndex);
+      this.swapFrames();
+      this.visibleDashboardIndex = candidateIndex;
+      this.preloadedDashboardIndex = null;
+      console.log(`Switched to: ${this.dashboards[candidateIndex].url}`);
+    } else {
+      console.log(`Staying on: ${this.dashboards[currentIndex].url}`);
+    }
+    this.planNextCycle(now);
+  }
+  planNextCycle(now) {
+    const currentIndex = this.visibleDashboardIndex;
+    if (currentIndex === null) {
+      this.scheduleRetry();
+      return;
+    }
+    const duration = this.dashboards[currentIndex].duration;
+    const nextChange = new Date(now.getTime() + duration);
+    this.countdownTimer.nextChange = nextChange;
+    const preloadIndex = this.pickNextDifferentIndex(currentIndex, nextChange);
+    if (preloadIndex !== null) {
+      this.ensurePreloaded(preloadIndex);
+      console.log(`Preloaded next: ${this.dashboards[preloadIndex].url}`);
+    } else {
+      this.preloadedDashboardIndex = null;
+      console.log('No different active dashboard to preload');
+    }
+    this.timerId = setTimeout(() => this.onTick(), duration);
+  }
+  ensurePreloaded(dashboardIndex) {
+    const hiddenFrame = this.getHiddenFrameIndex();
+    const url = this.dashboards[dashboardIndex].url;
+    if (this.preloadedDashboardIndex === dashboardIndex) {
+      return;
+    }
+    this.frames[hiddenFrame].src = url;
+    this.preloadedDashboardIndex = dashboardIndex;
+  }
+  swapFrames() {
+    const newVisible = this.getHiddenFrameIndex();
+    this.frames[this.visibleFrame].classList.remove('visible');
+    this.frames[newVisible].classList.add('visible');
+    this.visibleFrame = newVisible;
+  }
+  pickNextDifferentIndex(currentIndex, at) {
+    if (currentIndex === null || this.dashboards.length === 0) {
+      return null;
+    }
+    const currentUrl = this.dashboards[currentIndex].url;
+    for (let step = 1; step <= this.dashboards.length; step++) {
+      const i = (currentIndex + step) % this.dashboards.length;
+      const d = this.dashboards[i];
+      if (!d.isActive(at)) continue;
+      if (d.url !== currentUrl) return i;
+    }
+    return null;
+  }
+  detectVisibleFrameIndex() {
+    const idx = this.frames.findIndex(f => f.classList.contains('visible'));
+    if (idx >= 0) return idx;
+    throw new Error('No visible frame detected. Please ensure exactly one iframe has the "visible" class in HTML.');
+  }
+  getHiddenFrameIndex() {
+    return (this.visibleFrame + 1) % 2;
+  }
+  scheduleRetry() {
+    this.timerId = setTimeout(() => this.start(), 10_000);
+  }
+  clearTimer() {
+    if (this.timerId) {
+      clearTimeout(this.timerId);
+      this.timerId = null;
+    }
   }
 }
 exports.Scheduler = Scheduler;
